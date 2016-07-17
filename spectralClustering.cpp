@@ -181,8 +181,20 @@ NumericMatrix graph_laplacian(arma::mat degree, arma::mat affinity, int flavor){
     Rcout << "Returning the unnormalized Graph Laplacian!" << std::endl;
     graphL = degree - affinity;
   }
+  if(flavor == 2){
+    Rcout << "Returning the simple (random walk) Graph Laplacian!" << std::endl;
+    l_mat <- diag(nrow(degreeM)) - solve(degreeM) %*% affinityM;
+    
+    graphL = degree.eye();
+    
+    inv( diagmat(A) )
+  }
+  if(flavor == 2){
+    Rcout << "Returning the normalized (symmetric) Graph Laplacian!" << std::endl;
+  }
+  if(flavor == 2){
+    Rcout << "Returning the generalized Graph Laplacian!" << std::endl;
+  }
   
   return(wrap(graphL));
-  //return(as<NumericMatrix>(wrap(graphL)));
-  //return(graphL);
 }
