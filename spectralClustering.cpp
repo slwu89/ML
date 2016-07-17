@@ -1,8 +1,13 @@
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
 
 
-// Functions to generate similarity matrix S based on Gaussian RBF kernel function
+/*
+ * Functions to generate similarity matrix S based on Gaussian RBF kernel function
+ * S is a nXn distance matrix generated from an nXp data matrix
+ */
+
 
 // Evaluate Gaussian RBF kernel function over an entire matrix (rows are observations; columns are measured variables)
 // [[Rcpp::export]]
@@ -48,7 +53,7 @@ NumericMatrix expand_gridCpp(IntegerVector vecA, IntegerVector vecB){
 
 // Generate similarity matrix with Gaussian RBF kernel in C++
 // [[Rcpp::export]]
-NumericMatrix sim_matRBF(NumericMatrix data, double sigma){
+NumericMatrix sim_matrixRBF(NumericMatrix data, double sigma){
   //IntegerVector data_indicies = seq_len(data.nrow()) - 1;
   IntegerVector data_indicies;
   for(int i=0; i<data.nrow(); ++i){
@@ -62,8 +67,11 @@ NumericMatrix sim_matRBF(NumericMatrix data, double sigma){
 }
 
 
-// Functions to generate affinity matrix A
-// A will be a matrix formed by passing a KNN filter over S
+/*
+ * Functions to generate affinity matrix A
+ * A will be a matrix formed by passing a KNN filter over S
+ */
+
 
 // helper function to return n highest values of a sorted vector
 // [[Rcpp::export]]
@@ -98,7 +106,7 @@ IntegerVector whichCpp(NumericVector vecA, NumericVector vecB){
 
 // Generate affinity matrix A with KNN filter
 // [[Rcpp::export]]
-NumericMatrix aff_matKNN(NumericMatrix data, int neighbor){
+NumericMatrix aff_matrixKNN(NumericMatrix data, int neighbor){
   int n_points = data.nrow();
   NumericMatrix out(Dimension(n_points,n_points));
   for(int i=0; i<n_points; i++){
@@ -124,3 +132,57 @@ NumericMatrix aff_matKNN(NumericMatrix data, int neighbor){
   return(out);
 }
 
+
+/*
+ * Functions to generate degree matrix D
+ * D is a diagonal matrix where element is each vertex's degree of connectedness (row sums)
+ */
+
+
+// Generate degree matrix D from A
+// [[Rcpp::export]]
+NumericMatrix deg_matrix(NumericMatrix data){
+  NumericMatrix out(Dimension(data.nrow(),data.ncol()));
+  for(int i=0; i<data.nrow(); i++){ // iterate over rows of input
+    double deg_i = 0.0;
+    for(int j=0; j<data.ncol(); j++){ // iterate over cols of input
+      deg_i += data(i,j);
+    }
+    out(i,i) = deg_i;
+  }
+  return(out);
+}
+
+
+/*
+ * Functions to generate the Graph Laplacian matrix 
+ * This requires the affinity matrix A and degree matrix D as inputs
+ * Thie function can return 4 "flavor" of Graph Laplacian:
+ * 1: unnormalized
+ * 2: simple (random walk)
+ * 3: normalized (symmetric)
+ * 4: generalized
+ */
+
+// Generate Graph Laplacian
+// [[Rcpp::export]]
+NumericMatrix graph_laplacian(arma::mat degree, arma::mat affinity, int flavor){
+  
+  // check input
+  if(flavor < 1 || flavor > 4){
+    Rcout << "You need to tell me what Graph Laplacian you want! (unnorm, simple, norm, general)" << std::endl;
+    return(R_NilValue);
+  }
+  
+  arma::mat graphL;
+  
+  // check and return the correct flavor
+  if(flavor == 1){
+    Rcout << "Returning the unnormalized Graph Laplacian!" << std::endl;
+    graphL = degree - affinity;
+  }
+  
+  return(wrap(graphL));
+  //return(as<NumericMatrix>(wrap(graphL)));
+  //return(graphL);
+}

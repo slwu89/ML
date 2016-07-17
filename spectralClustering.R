@@ -233,7 +233,7 @@ aff_matrix <- function(sim_mat,neighbor=10){
 
 #Next need to compute the Degree Matrix D
 #make degree matrix, a diagonal matrix where element is each vertex's degree of connectedness
-deg_matrix <- function(aff_mat){
+deg_matrixR <- function(aff_mat){
   d_mat <- matrix(0,ncol=ncol(aff_mat),nrow=nrow(aff_mat))
   d_degree <- rowSums(aff_mat)
   diag(d_mat) <- d_degree
