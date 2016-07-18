@@ -164,37 +164,45 @@ NumericMatrix deg_matrix(NumericMatrix data){
  * 4: generalized
  */
 
+
+// Function to help take reciprocal square root; used for normalized symmetric Graph Laplacian
+// [[Rcpp::export]]
+arma::mat reciprocal_sqrt(arma::mat data){
+  arma::mat out = sqrt(data);
+  out.diag() = -1/out.diag();
+  return(out);
+}
+
+
 // Generate Graph Laplacian
 // [[Rcpp::export]]
 NumericMatrix graph_laplacian(arma::mat degree, arma::mat affinity, int flavor){
-  
+
   // check input
   if(flavor < 1 || flavor > 4){
     Rcout << "You need to tell me what Graph Laplacian you want! (unnorm, simple, norm, general)" << std::endl;
     return(R_NilValue);
   }
-  
+
   arma::mat graphL;
-  
+
   // check and return the correct flavor
   if(flavor == 1){
     Rcout << "Returning the unnormalized Graph Laplacian!" << std::endl;
     graphL = degree - affinity;
   }
   if(flavor == 2){
-    Rcout << "Returning the simple (random walk) Graph Laplacian!" << std::endl;
-    l_mat <- diag(nrow(degreeM)) - solve(degreeM) %*% affinityM;
-    
-    graphL = degree.eye();
-    
-    inv( diagmat(A) )
+    Rcout << "Returning the normalized (random walk) Graph Laplacian!" << std::endl;
+    graphL = degree.eye() - inv(diagmat(degree)) * affinity;
   }
-  if(flavor == 2){
+  if(flavor == 3){
     Rcout << "Returning the normalized (symmetric) Graph Laplacian!" << std::endl;
+    graphL = degree.eye() - reciprocal_sqrt(degree) * affinity * reciprocal_sqrt(degree);
   }
-  if(flavor == 2){
+  if(flavor == 4){
     Rcout << "Returning the generalized Graph Laplacian!" << std::endl;
+    graphL = inv(diagmat(degree)) * (degree - affinity);
   }
-  
+
   return(wrap(graphL));
 }
