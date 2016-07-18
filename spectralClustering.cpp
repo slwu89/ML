@@ -206,3 +206,19 @@ NumericMatrix graph_laplacian(arma::mat degree, arma::mat affinity, int flavor){
 
   return(wrap(graphL));
 }
+
+
+/*
+ * Spectral decomposition of the Graph Laplacian
+ * Note: these are general to any flavor of Graph Laplacian
+ */
+
+
+// Evaluate the eigensystem of the Graph Laplacian
+// [[Rcpp::export]]
+List spectral_decomp(arma::mat graphL){
+  arma::vec eigval;
+  arma::mat eigvec;
+  arma::eig_sym(eigval,eigvec,graphL);
+  return(List::create(Named("Eigenvectors")=eigvec,Named("Eigenvalues")=eigval));
+}
