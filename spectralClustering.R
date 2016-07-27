@@ -1,16 +1,40 @@
-####################################################
-######EDA Visualization & Clustering Functions######
-####################################################
+######################################################
+######Spectral Clustering implemented in R & C++######
+######Sean Wu 7/19/2016###############################
+######################################################
 
-###############################
-######Spectral Clustering######
-###############################
+#load packages
+library(Rcpp)
+library(RcppArmadillo)
+
+#source C++ code
+Rcpp::sourceCpp('C:/Users/WuS/Dropbox/GitHub/ML/spectralClustering.cpp')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 library(Rcpp)
 library(inline)
 library(parallel)
 library(foreach)
 library(doSNOW)
+library(ggplot2)
+library(microbenchmark)
 
 
 ####Compute the Graph Laplacian Matrix L###
@@ -324,7 +348,6 @@ spec_decomp <- function(L,k){
     labs(x="Index",y="1st Smallest Eigenvector") +
     theme_bw()
 }
-
 
 
 #spectral decomposition of the Laplacian
